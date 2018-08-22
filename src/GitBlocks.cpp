@@ -205,9 +205,9 @@ void GitBlocks::SetUser(wxCommandEvent &event)
       //wxMessageBox(command1, _("Debug"), wxOK);
 		ExecuteInTerminal(command1, _("Set user email ..."), dialog.TextCtrl2->GetValue());
 
-        //wxString command2 = git + _T(" commit --amend --reset-author ");
+        wxString command2 = git + _T(" commit --amend --reset-author ")+ _T("Reset Author");
         //	wxMessageBox(command2, _("Debug"), wxOK);
-		//ExecuteInTerminal(command2, _("Reset Author ..."), _T(""));
+		ExecuteInTerminal(command2, _("Reset Author ..."), _T(""));
 	  }
 
 	}
