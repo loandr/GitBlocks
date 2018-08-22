@@ -18,6 +18,7 @@
 #include "RemoveDialog.h"
 #include "NewBranchDialog.h"
 #include "SwitchBranchDialog.h"
+#include "SetUserDialog.h"
 
 // Register the plugin with Code::Blocks.
 // We are using an anonymous namespace so we don't litter the global one.
@@ -48,7 +49,7 @@ GitBlocks::~GitBlocks()
 void GitBlocks::OnAttach()
 {
 	git = _T("git");
-	
+
 	Logger *gitBlocksLogger = new TextCtrlLogger();
 	logSlot = Manager::Get()->GetLogManager()->SetLog(gitBlocksLogger);
 	Manager::Get()->GetLogManager()->Slot(logSlot).title = _T("GitBlocks");
@@ -63,7 +64,7 @@ void GitBlocks::OnRelease(bool appShutDown)
 
 int GitBlocks::Configure()
 {
-	
+
 }
 
 cbConfigurationPanel *GitBlocks::GetConfigurationPanel(wxWindow* parent)
@@ -81,10 +82,11 @@ void GitBlocks::RegisterFunction(wxObjectEventFunction func, wxString label)
 void GitBlocks::BuildMenu(wxMenuBar* menuBar)
 {
 	menu = new wxMenu();
-	
+
 	RegisterFunction(wxCommandEventHandler(GitBlocks::Init), _("Create an empty repository"));
 	RegisterFunction(wxCommandEventHandler(GitBlocks::Clone), _("Clone an existing repository"));
 	RegisterFunction(wxCommandEventHandler(GitBlocks::Destroy), _("Destroy the local repository"));
+     RegisterFunction(wxCommandEventHandler(GitBlocks::SetUser), _("Set user.name and user.e-mail"));
 	menu->AppendSeparator();
 	RegisterFunction(wxCommandEventHandler(GitBlocks::Commit), _("Commit"));
 	RegisterFunction(wxCommandEventHandler(GitBlocks::CommitAll), _("Commit all changes"));
@@ -101,7 +103,7 @@ void GitBlocks::BuildMenu(wxMenuBar* menuBar)
 	RegisterFunction(wxCommandEventHandler(GitBlocks::DiffToIndex), _("Diff to index"));
 	RegisterFunction(wxCommandEventHandler(GitBlocks::Log), _("Show log"));
 	RegisterFunction(wxCommandEventHandler(GitBlocks::Status), _("Show status"));
-	
+
 	menuBar->Insert(menuBar->FindMenu(_("&Tools")) + 1, menu, wxT("&GitBlocks"));
 }
 
@@ -109,17 +111,17 @@ void GitBlocks::Execute(wxString command, const wxString comment, wxString dir)
 {
 	if(dir.empty())
 		dir = Manager::Get()->GetProjectManager()->GetActiveProject()->GetBasePath();
-	
+
 	wxArrayString output;
-	
+
 	Manager::Get()->GetLogManager()->Log(comment, logSlot);
 	Manager::Get()->GetLogManager()->Log(command, logSlot);
-	
+
 	wxString ocwd = wxGetCwd();
 	wxSetWorkingDirectory(dir);
 	wxExecute(command, output);
 	wxSetWorkingDirectory(ocwd);
-	
+
 	for(unsigned int i=0;i<output.size();i++)
 		Manager::Get()->GetLogManager()->Log(output[i], logSlot);
 }
@@ -137,17 +139,17 @@ void GitBlocks::ExecuteInTerminal(wxString command, const wxString comment, wxSt
 wxArrayString GitBlocks::ListBranches()
 {
 	wxString dir = Manager::Get()->GetProjectManager()->GetActiveProject()->GetBasePath();
-	
+
 	wxArrayString output;
-	
+
 	wxString ocwd = wxGetCwd();
 	wxSetWorkingDirectory(dir);
 	wxExecute(git + _T(" branch"), output);
 	wxSetWorkingDirectory(ocwd);
-	
+
 	for(unsigned int i=0;i<output.size();i++)
 		output[i] = output[i].Mid(2);
-	
+
 	return output;
 }
 
@@ -163,7 +165,7 @@ void GitBlocks::Clone(wxCommandEvent &event)
 	{
 		wxString command = git + _T(" clone ") + dialog.Origin->GetValue();
 		ExecuteInTerminal(command, _("Cloning repository ..."), dialog.Directory->GetValue());
-		
+
 		wxFileDialog pdialog(Manager::Get()->GetAppWindow(), _("Open cloned project ..."), dialog.Directory->GetValue(), wxEmptyString, _("*.cbp;*.workspace"), wxFD_OPEN);
 		if(pdialog.ShowModal() == wxID_OK)
 		{
@@ -188,6 +190,24 @@ void GitBlocks::Destroy(wxCommandEvent &event)
 		wxRmdir(wxGetCwd() + _T("/.git"));
 	}
 }
+void GitBlocks::SetUser(wxCommandEvent &event)
+{
+	SetUserDialog dialog(Manager::Get()->GetAppWindow());
+	if(dialog.ShowModal() == wxID_OK)
+	{
+	  if (wxMessageBox(_("Are you sure you want to change Author name?"), _("Destroy local repository"), wxYES_NO) == wxYES)
+	  {
+		wxString command = git + _T(" config --global user.name ") + dialog.TextCtrl1->GetValue();
+		ExecuteInTerminal(command, _("Set user name ..."), dialog.TextCtrl1->GetValue());
+        wxString command1 = git + _T(" config --global user.email ") + dialog.TextCtrl2->GetValue();
+		ExecuteInTerminal(command1, _("Set user email ..."), dialog.TextCtrl2->GetValue());
+        wxString command2 = git + _T(" commit --amend --reset-author ") + dialog.TextCtrl2->GetValue();
+		ExecuteInTerminal(command2, _("Reset Author ..."), _T(""));
+	  }
+
+	}
+}
+
 
 void GitBlocks::Commit(wxCommandEvent &event)
 {
@@ -195,13 +215,13 @@ void GitBlocks::Commit(wxCommandEvent &event)
 	if(dialog.ShowModal())
 	{
 		wxString command;
-		
+
 		command = git + _T(" add");
 		for(unsigned int i = 0; i < dialog.FileChoice->GetCount(); i++)
 			if(dialog.FileChoice->IsChecked(i))
 				command += _T(" ") + dialog.FileChoice->GetString(i);
 		Execute(command, _("Adding files ..."));
-		
+
 		command = git + _T(" commit -m \"") + dialog.Comment->GetValue() + _T("\"");
 		Execute(command, _("Committing ..."));
 	}
@@ -214,13 +234,13 @@ void GitBlocks::CommitAll(wxCommandEvent &event)
 	{
 		wxString command;
 		cbProject *project = Manager::Get()->GetProjectManager()->GetActiveProject();
-		
+
 		command = git + _T(" add");
 		command += _T(" ") + project->GetFilename();
 		for(unsigned int i=0;i<project->GetFilesCount();i++)
 			command += _T(" ") + project->GetFile(i)->relativeFilename;
 		Execute(command, _("Adding files ..."));
-		
+
 		command = git + _T(" commit -m \"") + dialog.Comment->GetValue() + _T("\"");
 		Execute(command, _("Committing ..."));
 	}
@@ -275,11 +295,11 @@ void GitBlocks::NewBranch(wxCommandEvent &event)
 void GitBlocks::SwitchBranch(wxCommandEvent &event)
 {
 	SwitchBranchDialog dialog(Manager::Get()->GetAppWindow());
-	
+
 	wxArrayString branches = ListBranches();
 	for(unsigned int i=0; i<branches.size(); i++)
 		dialog.BranchChoice->Append(branches[i]);
-	
+
 	if(dialog.ShowModal() == wxID_OK)
 		Execute(git + _T(" checkout ") + branches[dialog.BranchChoice->GetSelection()], _("Switching branch ..."));
 }
@@ -289,23 +309,23 @@ void GitBlocks::DiffToIndex(wxCommandEvent &event)
 	wxString command = git + _T(" diff");
 	wxString comment = _("Fetching diff to index ...");
 	wxString dir = Manager::Get()->GetProjectManager()->GetActiveProject()->GetBasePath();
-	
+
 	wxArrayString output;
-	
+
 	Manager::Get()->GetLogManager()->Log(comment, logSlot);
 	Manager::Get()->GetLogManager()->Log(command, logSlot);
-	
+
 	wxString ocwd = wxGetCwd();
 	wxSetWorkingDirectory(dir);
 	wxExecute(command, output);
 	wxSetWorkingDirectory(ocwd);
-	
+
 	cbEditor *editor = Manager::Get()->GetEditorManager()->New(_("GitBlocks: Diff to index"));
 	cbStyledTextCtrl *ctrl = editor->GetControl();
-	
+
 	for(unsigned int i=0;i<output.size();i++)
 		ctrl->AppendText(output[i] + _T("\n"));
-	
+
 	editor->SetModified(false);
 }
 
@@ -314,23 +334,23 @@ void GitBlocks::Log(wxCommandEvent &event)
 	wxString command = git + _T(" log --pretty=format:%h%x09%an%x09%ad%x09%s");
 	wxString comment = _("Fetching log ...");
 	wxString dir = Manager::Get()->GetProjectManager()->GetActiveProject()->GetBasePath();
-	
+
 	wxArrayString output;
-	
+
 	Manager::Get()->GetLogManager()->Log(comment, logSlot);
 	Manager::Get()->GetLogManager()->Log(command, logSlot);
-	
+
 	wxString ocwd = wxGetCwd();
 	wxSetWorkingDirectory(dir);
 	wxExecute(command, output);
 	wxSetWorkingDirectory(ocwd);
-	
+
 	cbEditor *editor = Manager::Get()->GetEditorManager()->New(_("GitBlocks: Log"));
 	cbStyledTextCtrl *ctrl = editor->GetControl();
-	
+
 	for(unsigned int i=0;i<output.size();i++)
 		ctrl->AppendText(output[i] + _T("\n"));
-	
+
 	editor->SetModified(false);
 }
 
@@ -339,22 +359,27 @@ void GitBlocks::Status(wxCommandEvent &event)
 	wxString command = git + _T(" status");
 	wxString comment = _("Fetching status ...");
 	wxString dir = Manager::Get()->GetProjectManager()->GetActiveProject()->GetBasePath();
-	
+
 	wxArrayString output;
-	
+
 	Manager::Get()->GetLogManager()->Log(comment, logSlot);
 	Manager::Get()->GetLogManager()->Log(command, logSlot);
-	
+
 	wxString ocwd = wxGetCwd();
 	wxSetWorkingDirectory(dir);
 	wxExecute(command, output);
 	wxSetWorkingDirectory(ocwd);
-	
+
 	cbEditor *editor = Manager::Get()->GetEditorManager()->New(_("GitBlocks: Status"));
 	cbStyledTextCtrl *ctrl = editor->GetControl();
-	
+
 	for(unsigned int i=0;i<output.size();i++)
+	{
 		ctrl->AppendText(output[i] + _T("\n"));
-	
+    }
+
+        //wxString *test=new wxString(_T("TestTest"));
+    	ctrl->AppendText(_T("Test and Test"));
+
 	editor->SetModified(false);
 }

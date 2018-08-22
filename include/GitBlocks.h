@@ -92,10 +92,10 @@ public:
 	* @return The plugin should return true if it needed the toolbar, false if not
 	*/
 	virtual bool BuildToolBar(wxToolBar* toolBar) { return false; }
-	
+
 	wxString GetGit() { return git; }
 	void SetGit(wxString pgit) { git = pgit; }
-	
+
 protected:
 	/** Any descendent plugin should override this virtual method and
 	* perform any necessary initialization. This method is called by
@@ -108,7 +108,7 @@ protected:
 	* Think of this method as the actual constructor...
 	*/
 	virtual void OnAttach();
-	
+
 	/** Any descendent plugin should override this virtual method and
 	* perform any necessary de-initialization. This method is called by
 	* Code::Blocks (PluginManager actually) when the plugin has been
@@ -119,40 +119,41 @@ protected:
 	*         behaviour is undefined...
 	*/
 	virtual void OnRelease(bool appShutDown);
-	
+
 private:
 	int logSlot;
 	wxMenu *menu;
-	
+
 	wxString git;
-	
+
 	void RegisterFunction(wxObjectEventFunction func, wxString label);
-	
+
 	void Execute(wxString command, const wxString comment, wxString dir = wxEmptyString);
 	void ExecuteInTerminal(wxString command, const wxString comment, wxString dir = wxEmptyString);
-	
+
 	wxArrayString ListBranches();
-	
+
 	void Init(wxCommandEvent &event);
 	void Clone(wxCommandEvent &event);
 	void Destroy(wxCommandEvent &event);
-	
+	void SetUser(wxCommandEvent &event);
+
 	void Commit(wxCommandEvent &event);
 	void CommitAll(wxCommandEvent &event);
-	
+
 	void Push(wxCommandEvent &event);
 	void Pull(wxCommandEvent &event);
 	void Fetch(wxCommandEvent &event);
-	
+
 	void Remove(wxCommandEvent &event);
-	
+
 	void NewBranch(wxCommandEvent &event);
 	void SwitchBranch(wxCommandEvent &event);
-	
+
 	void DiffToIndex(wxCommandEvent &event);
 	void Log(wxCommandEvent &event);
 	void Status(wxCommandEvent &event);
-	
+
 	DECLARE_EVENT_TABLE();
 };
 

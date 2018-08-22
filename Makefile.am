@@ -13,7 +13,8 @@ GitBlocks_la_SOURCES = src/CloneDialog.cpp \
 						src/GitBlocks.cpp \
 						src/NewBranchDialog.cpp \
 						src/RemoveDialog.cpp \
-						src/SwitchBranchDialog.cpp
+						src/SwitchBranchDialog.cpp \
+						src/SetUserDialog.cpp
 
 noinst_HEADERS = include/CloneDialog.h \
 					include/CommitAllDialog.h \
@@ -21,7 +22,8 @@ noinst_HEADERS = include/CloneDialog.h \
 					include/GitBlocks.h \
 					include/NewBranchDialog.h \
 					include/RemoveDialog.h \
-					include/SwitchBranchDialog.h
+					include/SwitchBranchDialog.h \
+					include/SetUserDialog.h
 
 GitBlocks_la_CPPFLAGS = -ansi $(WX_CFLAGS) $(CB_CFLAGS) -Iinclude
 

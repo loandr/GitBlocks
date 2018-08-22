@@ -30,11 +30,11 @@ NewBranchDialog::NewBranchDialog(wxWindow* parent,wxWindowID id,const wxPoint& p
 	StaticText1 = new wxStaticText(this, ID_STATICTEXT1, _("Name: "), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT1"));
 	BoxSizer2->Add(StaticText1, 0, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	Name = new wxTextCtrl(this, ID_NAME, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_NAME"));
-	BoxSizer2->Add(Name, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
-	BoxSizer1->Add(BoxSizer2, 1, wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	BoxSizer2->Add(Name, 1, wxALL|wxEXPAND, 5);
+	BoxSizer1->Add(BoxSizer2, 1, wxEXPAND, 5);
 	Switch = new wxCheckBox(this, ID_SWITCH, _("Switch to branch"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_SWITCH"));
 	Switch->SetValue(true);
-	BoxSizer1->Add(Switch, 1, wxRIGHT|wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL, 5);
+	BoxSizer1->Add(Switch, 1, wxRIGHT|wxALIGN_RIGHT, 5);
 	StdDialogButtonSizer1 = new wxStdDialogButtonSizer();
 	StdDialogButtonSizer1->AddButton(new wxButton(this, wxID_OK, wxEmptyString));
 	StdDialogButtonSizer1->AddButton(new wxButton(this, wxID_CANCEL, wxEmptyString));
