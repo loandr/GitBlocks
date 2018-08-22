@@ -195,14 +195,19 @@ void GitBlocks::SetUser(wxCommandEvent &event)
 	SetUserDialog dialog(Manager::Get()->GetAppWindow());
 	if(dialog.ShowModal() == wxID_OK)
 	{
-	  if (wxMessageBox(_("Are you sure you want to change Author name?"), _("Destroy local repository"), wxYES_NO) == wxYES)
+	  if (wxMessageBox(_("Are you sure you want to Change Author name and email?"), _("Change Author name and email"), wxYES_NO) == wxYES)
 	  {
-		wxString command = git + _T(" config --global user.name ") + dialog.TextCtrl1->GetValue();
+
+		wxString command = git + _T(" config --global user.name '") + dialog.TextCtrl1->GetValue()+_T("'");
+		//wxMessageBox(command, _("Debug"), wxOK);
 		ExecuteInTerminal(command, _("Set user name ..."), dialog.TextCtrl1->GetValue());
-        wxString command1 = git + _T(" config --global user.email ") + dialog.TextCtrl2->GetValue();
+        wxString command1 = git + _T(" config --global user.email '") + dialog.TextCtrl2->GetValue()+_T("'");
+      //wxMessageBox(command1, _("Debug"), wxOK);
 		ExecuteInTerminal(command1, _("Set user email ..."), dialog.TextCtrl2->GetValue());
-        wxString command2 = git + _T(" commit --amend --reset-author ") + dialog.TextCtrl2->GetValue();
-		ExecuteInTerminal(command2, _("Reset Author ..."), _T(""));
+
+        //wxString command2 = git + _T(" commit --amend --reset-author ");
+        //	wxMessageBox(command2, _("Debug"), wxOK);
+		//ExecuteInTerminal(command2, _("Reset Author ..."), _T(""));
 	  }
 
 	}
